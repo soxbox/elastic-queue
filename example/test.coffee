@@ -21,8 +21,8 @@ clone = (obj) ->
   JSON.parse JSON.stringify(obj)
 
 document =
-  index: 'air-products-na'
-  type: 'po'
+  index: 'elastic-product'
+  type: 'queue'
   id: 0 # use hash of entire row as document id
   body:
     metadata: # header info about file
