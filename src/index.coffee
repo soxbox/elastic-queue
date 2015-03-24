@@ -7,7 +7,6 @@ baseConfig =
   elasticsearch:
     client:
       host: "localhost:9200"
-      # host: "custer.s03.filex.com:80"
       log: "info"
       minSockets: 1
       sniffInterval: 60000
