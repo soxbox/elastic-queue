@@ -21,8 +21,8 @@ Queue = new ElasticQueue();
 var elasticDocument;
 
 elasticDocument = {
-  index: 'air-products-na',
-  type: 'po',
+  index: 'elastic-product',
+  type: 'queue',
   id: 0,
   body: {
     metadata: {
