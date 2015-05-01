@@ -19,14 +19,18 @@ baseConfig =
   batchType: "batch_single" # batch_single: convert singles into batches
 
 class ElasticQueue extends events.EventEmitter
-  constructor: (config = {})->
+
+  constructor: (config = {}, esClient) ->
     @config = Hoek.applyToDefaults baseConfig, config
     @queue = []
     @checkTimer = setInterval @check, @config.rateLimit
     @async = async.queue @task, @config.concurency
     @async.drain = @drain
     @count = 1
-    @setup_elastic()
+    if esClient?
+      @esClient = esClient
+    else
+      @setup_elastic()
 
   drain: =>
     if @queue.length is 0
@@ -35,7 +39,7 @@ class ElasticQueue extends events.EventEmitter
   setup_elastic: ->
     @esClient = new elasticsearch.Client @config.elasticsearch.client
 
-  push: (item)->
+  push: (item) ->
     @queue.push item
 
   check: =>
@@ -57,15 +61,15 @@ class ElasticQueue extends events.EventEmitter
       @batchTimeout =
         setTimeout @batch, @config.rateLimit + @config.commitTimeout
 
-  batchComplete: (err, resp)=>
+  batchComplete: (err, resp) =>
     return @emit('error', err) if err
     @emit 'batchComplete', resp
 
-  task: (task, callback)=>
+  task: (task, callback) =>
     @emit 'task', task
     @[@config.batchType] task, callback
 
-  batch_single: (task, done)=>
+  batch_single: (task, done) =>
     index = []
     for key, value of task.batch
       index.push
