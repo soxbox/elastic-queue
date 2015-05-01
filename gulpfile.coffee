@@ -13,14 +13,14 @@ coffeeFiles = ['src/*.coffee']
 testFiles   = jsFiles
 buildFiles  = ['lib', 'coverage']
 
-gulp.task 'clean', (cb) ->
-  del buildFiles, cb
+gulp.task 'clean', ->
+  del.sync buildFiles
 
 gulp.task 'lint', ->
   gulp.src coffeeFiles
     .pipe coffeelint()
     .pipe coffeelint.reporter()
-    # .pipe coffeelint.reporter('fail') # fail task
+    .pipe coffeelint.reporter('fail') # fail task
 
 gulp.task 'coffee', ['lint'], ->
   gulp.src coffeeFiles

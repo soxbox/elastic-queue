@@ -39,5 +39,35 @@
     "gulp-mocha": "^2.0.0",
     "gulp-sourcemaps": "^1.5.0",
     "gulp-util": "^3.0.4"
+  },
+  "coffeelintConfig": {
+    "arrow_spacing": {
+      "name": "arrow_spacing",
+      "level": "error"
+    },
+    "max_line_length": {
+      "name": "max_line_length",
+      "value": 120,
+      "level": "warn",
+      "limitComments": false
+    },
+    "indentation": {
+      "name": "indentation",
+      "value": 2,
+      "level": "warn"
+    },
+    "no_empty_param_list": {
+      "name": "no_empty_param_list",
+      "level": "ignore"
+    },
+    "cyclomatic_complexity": {
+      "name": "cyclomatic_complexity",
+      "value": 22,
+      "level": "error"
+    },
+    "no_unnecessary_fat_arrows": {
+      "name": "no_unnecessary_fat_arrows",
+      "level": "error"
+    }
   }
 }
