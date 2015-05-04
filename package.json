@@ -1,6 +1,6 @@
 {
   "name": "elastic-queue",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Elasticsearch nodejs batching queue",
   "main": "lib/index.js",
   "scripts": {
