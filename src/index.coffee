@@ -43,7 +43,7 @@ class ElasticQueue extends events.EventEmitter
     @queue.push item
 
   check: =>
-    if @queue.length >= @config.batchSize
+    if @queue.length > 0
       @batch()
 
   batch: =>
