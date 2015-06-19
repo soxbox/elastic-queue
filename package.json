@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/soxbox/elastic-queue",
   "dependencies": {
-    "async": ">0.9 <2.0",
+    "async": ">=0.9 <2.0",
     "elasticsearch": ">4.0",
     "hoek": "^2.11.1"
   },
