@@ -39,8 +39,8 @@ class ElasticQueue extends events.EventEmitter
   setup_elastic: ->
     @esClient = new elasticsearch.Client @config.elasticsearch.client
 
-  push: (item) ->
-    @queue.push item
+  push: (task, callback = null) ->
+    @queue.push { task: task, callback: callback }
 
   check: =>
     if @queue.length > 0
@@ -61,7 +61,24 @@ class ElasticQueue extends events.EventEmitter
       @batchTimeout =
         setTimeout @batch, @config.rateLimit + @config.commitTimeout
 
-  batchComplete: (err, resp) =>
+  batchComplete: (err, resp, task) =>
+    messages = []
+
+    if resp?.items
+      resp.items.forEach (item) ->
+        messages[item.index._id] = item
+
+    task.batch.forEach (item) ->
+      if item.callback?
+        if messages[item.task.id]?
+          message = messages[item.task.id]
+          if [200, 201].indexOf(message.index.status) > -1
+            item.callback(null, message)
+          else
+            item.callback(new Error(message.index.error), message)
+        else
+          item.callback()
+
     return @emit('error', err) if err
     @emit 'batchComplete', resp
 
@@ -69,19 +86,20 @@ class ElasticQueue extends events.EventEmitter
     @emit 'task', task
     @[@config.batchType] task, callback
 
+
   batch_single: (task, done) =>
     index = []
     for key, value of task.batch
       index.push
         index:
-          _index: value.index
-          _type: value.type
-          _id: value.id
-      index.push value.body if value.body?
+          _index: value.task.index
+          _type: value.task.type
+          _id: value.task.id
+      index.push value.task.body if value.task.body?
 
     @esClient.bulk body: index, (err, res) ->
-      return done(err) if err
-      done(null, res)
+      return done(err, null, task) if err
+      done(null, res, task)
 
   close: ->
     @esClient.close()
