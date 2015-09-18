@@ -7,10 +7,10 @@ Queue = new ElasticQueue
   rateLimit: 1000
 
 Queue.on 'task', (batch)->
-  console.log "task", batch
+  console.log "task"
 
 Queue.on 'batchComplete', (resp)->
-  console.log "batch complete", resp
+  console.log "batch complete"
 
 Queue.on 'drain', ->
   console.log "\n\nQueue is Empty\n\n"
@@ -28,10 +28,25 @@ document =
     metadata: # header info about file
       fileName: 'inputFile'
 
+document2 =
+  index: 'elastic-product'
+  type: 'queue'
+  id: 0 # use hash of entire row as document id
+  body:
+    metadata: # header info about file
+      fileName: [{ test:'inputFile' }]
 
 i = 0
 while i < 50
   d = clone document
   d.id = i++
-  Queue.push d
+  Queue.push d, (err, resp) ->
+    return console.log err if err
+    console.log resp
 
+
+d = document2
+d.id = i++
+Queue.push d, (err, resp) ->
+  return console.log err if err
+  console.log resp
