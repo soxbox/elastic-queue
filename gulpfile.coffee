@@ -9,7 +9,7 @@ mocha = require 'gulp-mocha'
 
 jsFiles     = ['lib/*.js']
 specFiles   = ['spec/**/*.coffee']
-coffeeFiles = ['src/*.coffee']
+coffeeFiles = ['src/**/*.coffee']
 testFiles   = jsFiles
 buildFiles  = ['lib', 'coverage']
 

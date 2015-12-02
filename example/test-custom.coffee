@@ -2,12 +2,33 @@
 
 ElasticQueue = require '../'
 
+class CustomHandler
+  constructor: (@config, @client) ->
+    # do some setup?
+
+  batchTask: (task, done) ->
+    console.log task
+    done(null, "all done", task)
+
+  batchComplete: (err, resp, task) ->
+    messages = []
+
+    if resp?.items?
+      resp.items.forEach (item) ->
+        messages[item?.index?._id] = item
+
+    if task?.batch?
+      task.batch.forEach (item) ->
+        item.callback(err, resp)
+
+  close: () ->
+    # do some cleanup
+
+
 Queue = new ElasticQueue
   batchSize: 11
   rateLimit: 1000
-  batchHandler: (task, done) ->
-    console.log task
-    done(null, null, task)
+  batchHandler: CustomHandler
 
 Queue.on 'task', (batch)->
   console.log "task"
