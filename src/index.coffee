@@ -89,10 +89,10 @@ class ElasticQueue extends events.EventEmitter
     if @config?.batchHandler?
       @config.batchHandler task, callback
     else
-      @elasticSearch task, callback
+      @elasticSearchBatchHandler task, callback
 
 
-  elasticSearch: (task, done) =>
+  elasticSearchBatchHandler: (task, done) =>
     index = []
     for key, value of task.batch
       index.push
