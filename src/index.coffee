@@ -16,7 +16,7 @@ baseConfig =
   batchSize: 500 # batch size
   commitTimeout: 1000 # wait time before sending partial batches
   rateLimit: 2000
-  batchType: "batch_single" # batch_single: convert singles into batches
+  batchHandler: null
 
 class ElasticQueue extends events.EventEmitter
 
@@ -27,10 +27,11 @@ class ElasticQueue extends events.EventEmitter
     @async = async.queue @task, @config.concurency
     @async.drain = @drain
     @count = 1
-    if esClient?
-      @esClient = esClient
-    else
-      @setup_elastic()
+    unless @config?.batchHandler?
+      if esClient?
+        @esClient = esClient
+      else
+        @setup_elastic()
 
   drain: =>
     if @queue.length is 0
@@ -64,30 +65,34 @@ class ElasticQueue extends events.EventEmitter
   batchComplete: (err, resp, task) =>
     messages = []
 
-    if resp?.items
+    if resp?.items?
       resp.items.forEach (item) ->
-        messages[item.index._id] = item
+        messages[item?.index?._id] = item
 
-    task.batch.forEach (item) ->
-      if item.callback?
-        if messages[item.task.id]?
-          message = messages[item.task.id]
-          if [200, 201].indexOf(message.index.status) > -1
-            item.callback(null, message)
+    if task?.batch?
+      task.batch.forEach (item) ->
+        if item?.callback?
+          if item?.task?.id? and messages[item?.task?.id]?
+            message = messages[item?.task?.id]
+            if [200, 201].indexOf(message?.index?.status) > -1
+              item.callback(null, message)
+            else
+              item.callback(new Error(message.index.error), message)
           else
-            item.callback(new Error(message.index.error), message)
-        else
-          item.callback()
+            item.callback(err, resp)
 
     return @emit('error', err) if err
     @emit 'batchComplete', resp
 
   task: (task, callback) =>
     @emit 'task', task
-    @[@config.batchType] task, callback
+    if @config?.batchHandler?
+      @config.batchHandler task, callback
+    else
+      @elasticSearch task, callback
 
 
-  batch_single: (task, done) =>
+  elasticSearch: (task, done) =>
     index = []
     for key, value of task.batch
       index.push
@@ -102,6 +107,7 @@ class ElasticQueue extends events.EventEmitter
       done(null, res, task)
 
   close: ->
-    @esClient.close()
+    if @esClient?
+      @esClient.close()
 
 module.exports = exports = ElasticQueue
